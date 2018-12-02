@@ -25,9 +25,8 @@ function dupeFinder () {
   let i = 0
   const s = lines.length
 
-  if (sums.length % 1000 === 0) {
-    console.log('stack', sums.length)
-  }
+  // Uncommend this for debugging. Logging makes things take longer.
+  // console.log(sums.length / lines.length)
 
   for (i; i < s; i++) {
     sum += lines[i]
