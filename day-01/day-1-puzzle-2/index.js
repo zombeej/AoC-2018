@@ -11,15 +11,20 @@ let found = false
 lineReader.on('line', (line) => {
   const num = parseInt(line)
   lines.push(num)
-  console.log('pushed: ', num)
 })
 
 lineReader.on('close', () => {
   console.log('lines:', lines.length)
+  // firstTry()
+  secondTry()
+})
+
+// takes about 9.5s
+function firstTry () {
   while (!found) {
     dupeFinder()
   }
-})
+}
 
 function dupeFinder () {
   let i = 0
@@ -38,4 +43,28 @@ function dupeFinder () {
     }
     sums.push(sum)
   }
+}
+
+// takes about 150ms
+function secondTry () {
+  sums.push(0)
+  lines.forEach(n => {
+    sum += n
+    sums.push(sum)
+  })
+  const period = sums.splice(-1)[0]
+  let stack = 1
+  while (!found) {
+    for (let i = 0; i < sums.length; i++) {
+      let test = sums[i] + (period * stack)
+      if (sums.includes(test)) {
+        found = test
+        break
+      }
+    }
+    stack++
+  }
+  console.log('first repeated sum: ', found)
+  console.log('time: ', Date.now() - start)
+  console.log('stack: ', stack)
 }
