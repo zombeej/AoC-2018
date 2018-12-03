@@ -53,4 +53,5 @@ function calcInches () {
     if (!overlaps) { magic = l.i }
   })
   console.log(magic)
+  console.log('time: ', Date.now() - start)
 }
