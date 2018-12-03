@@ -34,9 +34,8 @@ function calcInches () {
       }
     }
   })
-  let dupes = 0
-  Object.keys(matrix).forEach(m => {
-    if (matrix[m] > 1) { dupes ++}
-  })
+  let dupes = Object.keys(matrix).reduce((agg, m) => {
+    return matrix[m] > 1 ? agg + 1 : agg
+  }, 0)
   console.log(dupes)
 }
