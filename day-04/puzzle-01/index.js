@@ -25,11 +25,9 @@ lineReader.on('line', (line) => {
 lineReader.on('close', () => {
   console.log('lines:', lines.length)
   lines = lines.sort((a, b) => {
-    const ads = a.ts.split(' ')[0].split('-')
-    const ats = a.ts.split(' ')[1].split(':')
-    const bds = b.ts.split(' ')[0].split('-')
-    const bts = b.ts.split(' ')[1].split(':')
-    return new Date(ads[0], ads[1], ads[2], ats[0], ats[1]).getTime() - new Date(bds[0], bds[1], bds[2], bts[0], bts[1]).getTime()
+    let tsa = a.ts.replace(/[-:\s]/g, '')
+    let tsb = b.ts.replace(/[-:\s]/g, '')
+    return tsa - tsb
   }).map(a => {
     const ads = a.ts.split(' ')[0]
     const ats = a.ts.split(' ')[1].split(':')
@@ -39,44 +37,56 @@ lineReader.on('close', () => {
       minute: ats[1]
     }
   })
-  let sleepMins = {}
-  let currentGuard = null
-  let currentMinute = 0
-  lines.forEach(ev => {
-    if (ev.guard) {
-      currentGuard = ev.guard
-      sleepMins[currentGuard] = sleepMins[currentGuard] || {}
-      currentMinute = 0
-      return
-    }
-    if (ev.asleep && !ev.guard) {
-      currentMinute = parseInt(ev.minute)
-    }
-    if (ev.awake && !ev.guard) {
-      for (currentMinute; currentMinute < ev.minute; currentMinute++) {
-        sleepMins[currentGuard][currentMinute] = sleepMins[currentGuard][currentMinute] || 0
-        sleepMins[currentGuard][currentMinute] += 1
-      }
+  let guards = []
+  lines.forEach(l => {
+    if (l.guard) {
+      if (!guards.includes(l.guard))
+      guards.push(l.guard)
     }
   })
-  sleepMins = Object.keys(sleepMins).map(k => {
+  const times = guards.map(g => {
+    let time = 0
+    let minutes = Array(60).fill(0)
+    let start = 0
+    let isGuard = false
+    lines.forEach(l => {
+      if (l.guard === g) {
+        isGuard = true
+        return
+      }
+      if (l.guard) {
+        isGuard = false
+        return
+      }
+      if (isGuard && l.asleep) {
+        start = parseInt(l.minute)
+      }
+      if (isGuard && l.awake) {
+        const min = parseInt(l.minute)
+        // console.log(g, start, min, min - start)
+        time += (min - start)
+        let s = start
+        for (s; s < min; s++) {
+          minutes[s] += 1
+        }
+      }
+    })
     return {
-      id: parseInt(k),
-      count: Object.keys(sleepMins[k]).reduce((agg, m) => {
-        return agg + sleepMins[k][m]
-      }, 0),
-      minutes: sleepMins[k]
+      id: g,
+      time,
+      minutes
     }
-  }).sort((a, b) => b.count - a.count)
-  console.log(sleepMins[0])
-  const min = Object.keys(sleepMins[0].minutes).reduce((agg, m) => {
-    return agg[1] > sleepMins[0].minutes[m] ? agg : [
-      m,
-      sleepMins[0].minutes[m]
-    ]
-  }, [0, 0])
-  console.log(Object.keys(sleepMins).map(m => {
-    return sleepMins[m].count
+  })
+  const sorted = times.sort((a, b) => b.time - a.time)
+  const maxMin = sorted[0].minutes.reduce((agg, m) => Math.max(agg, m), 0)
+  console.log(lines.slice(0, 10).map(l => l.ts))
+  console.log(times[0], maxMin)
+  console.log('answer:', sorted[0].minutes.indexOf(maxMin) * parseInt(sorted[0].id))
+  console.log(sorted.map(s => {
+    return {
+      id: s.id,
+      time: s.time
+    }
   }))
-  console.log(sleepMins[0].id * min[0])
 })
+// 733 * 48
