@@ -1,4 +1,5 @@
 const start = Date.now()
+const { fork } = require('child_process')
 const wx = 300
 const wy = 300
 
@@ -30,16 +31,14 @@ function getPowerFromCoords (x, y, s) {
   return total
 }
 
-// console.log(calcCellPower(101, 153))
-// console.log(getPowerFromCoords(21, 61))
-let max = {
-  size: 1,
-  coords: [1, 1],
-  power: getPowerFromCoords(1, 1)
-}
-let s = 1
-for (s; s <= wx; s++) {
-  console.log(s, max)
+async function getMaxGridPower (s) {
+  let max = {
+    size: s,
+    coords: [1, 1],
+    power: getPowerFromCoords(1, 1, s)
+  }
+  // console.log(s, max)
+  console.log('starting size ', s)
   let x = 1
   for (x; x <= wx - s + 1; x++) {
     let y = 1
@@ -54,7 +53,48 @@ for (s; s <= wx; s++) {
       }
     }
   }
+  console.log(s, max)
+  return max
 }
 
-console.log(max)
-console.log('time in ms: ', Date.now() - start)
+// console.log(calcCellPower(101, 153))
+// console.log(getPowerFromCoords(21, 61))
+function doTheThings () {
+  let s = 1
+  let r = wx
+  while (s < wx) {
+    let f = fork('child', [s, sn, wx, wy])
+    f.on('message', m => {
+      console.log(m)
+      r--
+      checker(r, m)
+    })
+    s++
+  }
+  // const vals = await Promise.all(promises)
+  // const max = vals.reduce((a, v) => {
+  //   return a.power > v.power ? a : v
+  // }, {size: null, coords: null, power: 0})
+
+  // console.log(max)
+}
+
+let max = {
+  size: null,
+  coords: null,
+  power: 0
+}
+
+function checker (r, m) {
+  console.log('messages awaiting: ', r)
+  if (m.power > max.power) {
+    max = m
+  }
+  if (r <= 1) {
+    console.log('done')
+    console.log(max)
+    console.log('time in ms: ', Date.now() - start)
+  }
+}
+
+doTheThings()
