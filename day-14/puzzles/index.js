@@ -8,10 +8,10 @@ let p1 = false
 let p2 = false
 
 function nextRecipes (cur = [0, 1], total = []) {
-  if (total.length % 10000 === 0) {
-    console.log(total.length)
-    console.log((Date.now() - ts) / 60000)
-  }
+  // if (total.length % 10000 === 0) {
+  //   console.log(total.length)
+  //   console.log((Date.now() - ts) / 60000)
+  // }
   if (!p1 && total.length >= input + resultLen) {
     getResult(total)
     p1 = true
@@ -55,7 +55,7 @@ function getMatchFound (total) {
   const str = total.join('')
   const match = str.search(input2)
   console.log('number of recipes to match: ', match)
-  // const numRecipes = total.slice
+  console.log('finished in ms: ', Date.now() - ts)
 }
 
 nextRecipes([0, 1], start)
