@@ -129,12 +129,12 @@ function tick (prev=0, end=false) {
   }
   if (cartsLeft > 0){
     // Uncomment this and comment the nextTick to animate the paths
-    // console.log('\033[2J')
-    // map.forEach(l => {
-    //   console.log(l.map(c => c.c ? c.c.d : c.t).join(''))
-    // })
-    // setTimeout(() => tick(cartsLeft, end), 50)
-    process.nextTick(() => tick(cartsLeft, end))
+    console.log('\033[2J')
+    map.forEach(l => {
+      console.log(l.map(c => c.c ? c.c.d : c.t).join(''))
+    })
+    setTimeout(() => tick(cartsLeft, end), 50)
+    // process.nextTick(() => tick(cartsLeft, end))
   } else {
     console.log('last cart: ', lastCart)
     console.log('time taken(ms): ', Date.now() - start)
